@@ -44,7 +44,7 @@ LICENSE file in the root directory of this source tree.
                 <h2>Data needed</h2>
                 <label id="wtDestData">WT server:<input id="wtServerUrl" type="text"
                         value="https://localhost:4433/moq" size="64"></label>
-                <div class="clear"></div>
+                <div class="clear"></div>                
                 <label>Namespace:<input id="namespace" type="text" value="vc"></label>
                 <div class="clear"></div>
                 <label>Track name (audio,video will be added):<input id="trackName" type="text" value="202112241726"></label><label>Old
@@ -58,7 +58,7 @@ LICENSE file in the root directory of this source tree.
                 <label>(it waits until audio buffers this amount to start playback)</label>
                 <div class="clear"></div>
                 <label>Max audio player buffer (ms):<input id="playerMaxBufferMs" type="text" value="300"></label>
-                <label>(this + jitter is the max latency allowed)</label>
+                <label>(this + jitter is the max latency allowed)</label>                
                 <div class="clear"></div>
                 <label>Audio jitter buffer buffer for this player (ms):<input id="audioJitterBufferMs" type="text"
                         value="200" size="8"><button id="btnJitterAudioUpdate" type="button" disabled>Update</button></label>
@@ -191,7 +191,6 @@ LICENSE file in the root directory of this source tree.
         <ol id="droppedFrames"></ol>
     </div>
 </body>
-<script src="./enable-threads.js"></script>
 <script type="module">
     import { VideoRenderBuffer } from "../render/video_render_buffer.js"
     import { JitterBuffer } from "../utils/jitter_buffer.js"
@@ -305,7 +304,7 @@ LICENSE file in the root directory of this source tree.
     // Used to check latency
     let latencyAudioChecker = null;
     let latencyVideoChecker = null;
-
+    
     // Used in case we use latency tracker
     const overlayDecoder = new OverlayDecoder();
 
@@ -394,16 +393,16 @@ LICENSE file in the root directory of this source tree.
 
         // Ini downloaderConfig
         if (IS_LOCALHOST) {
-            const fingerprint_filename = `${location.origin}/certs/certificate_fingerprint.hex`;
-            downloaderConfig.certificateHash = await getBinaryFile(fingerprint_filename)
+            const fingerprint_filename = `${location.origin}/certs/certificate_fingerprint.hex`; 
+            downloaderConfig.certificateHash = await getBinaryFile(fingerprint_filename)            
         }
         // Get url data
         downloaderConfig.urlHostPort = document.getElementById('wtServerUrl').value;
-
+        
         downloaderConfig.moqTracks["video"].namespace = document.getElementById('namespace').value;
         downloaderConfig.moqTracks["video"].name = document.getElementById('trackName').value + "-video";
         downloaderConfig.moqTracks["video"].authInfo = document.getElementById('authInfo').value;
-
+        
         downloaderConfig.moqTracks["audio"].namespace = document.getElementById('namespace').value;
         downloaderConfig.moqTracks["audio"].name = document.getElementById('trackName').value + "-audio";
         downloaderConfig.moqTracks["audio"].authInfo = document.getElementById('authInfo').value;
@@ -490,7 +489,7 @@ LICENSE file in the root directory of this source tree.
     function createWorkers() {
         // Create a worker to download chunk
         muxerDownloaderWorker = new Worker("../receiver/moq_demuxer_downloader.js", {type: "module"});
-
+        
         audioDecoderWorker = new Worker("../decode/audio_decoder.js", {type: "module"});
         videoDecoderWorker = new Worker("../decode/video_decoder.js", {type: "module"});
     }
@@ -738,7 +737,7 @@ LICENSE file in the root directory of this source tree.
             if (audioCtx == null && aFrame.sampleRate != undefined && aFrame.sampleRate > 0) {
                 // Initialize the audio when we know sampling freq used in the capture
                 await initializeAudioContext(aFrame.sampleRate);
-            }
+            } 
             // If audioSharedBuffer not initialized and is in start (render) state -> Initialize
             if (audioCtx != null && sourceBufferAudioWorklet != null && audioSharedBuffer === null) {
                 buffersInfo.renderer.audio.sizeMs = Math.max(playerMaxBufferMs, playerBufferMs * 2, 100);
@@ -771,14 +770,14 @@ LICENSE file in the root directory of this source tree.
 
             const decoded = overlayDecoder.Decode(vFrame)
             if (decoded.confidence > 0.3) {
-                vFrame.overlayClk = decoded.val
+                vFrame.overlayClk = decoded.val                
             } else {
                 updateVideoLatencyOverlayUI()
             }
             if (VERBOSE) {
                 console.debug(`[OVERLAY] overlay decoded. ts: ${vFrame.timestamp}, val: ${decoded.val} (conf: ${decoded.confidence})}`)
             }
-
+               
             if (videoRendererBuffer != null && videoRendererBuffer.AddItem(vFrame) === false) {
                 console.warn("Dropped video frame because video renderer is full");
                 vFrame.close();
@@ -882,8 +881,8 @@ LICENSE file in the root directory of this source tree.
                     if ('overlayClk' in retData.vFrame) {
                         const currentLatencyMs = (Date.now() - Number(retData.vFrame.overlayClk));
                         updateVideoLatencyOverlayUI(currentLatencyMs);
-                    }
-                    // Legacy
+                    } 
+                    // Legacy                        
                     if (latencyVideoChecker != null) {
                         const frameClosestData = latencyVideoChecker.GetItemByTs(timingInfo.renderer.currentVideoTS, true);
                         if (frameClosestData.valid) {
