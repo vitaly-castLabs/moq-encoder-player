@@ -46,7 +46,7 @@ function getAndOverrideInitDataValues(metadata) {
   config.optimizeForLatency = true
   // In my test @2022/11 with hardware accel could NOT get real time decoding,
   // switching to soft decoding fixed everything (h264)
-  //config.hardwareAcceleration = 'prefer-software'
+  config.hardwareAcceleration = 'prefer-software'
 
   return config
 }
