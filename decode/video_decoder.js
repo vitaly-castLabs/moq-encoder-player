@@ -46,7 +46,7 @@ function getAndOverrideInitDataValues(metadata) {
   config.optimizeForLatency = true
   // In my test @2022/11 with hardware accel could NOT get real time decoding,
   // switching to soft decoding fixed everything (h264)
-  config.hardwareAcceleration = 'prefer-software'
+  //config.hardwareAcceleration = 'prefer-software'
 
   return config
 }
@@ -75,13 +75,13 @@ self.addEventListener('message', async function (e) {
   } else if (type === 'videochunk') {
     if (e.data.metadata !== undefined && e.data.metadata != null) {
       sendMessageToMain(WORKER_PREFIX, 'debug', `SeqId: ${e.data.seqId} Received chunk, chunkSize: ${e.data.chunk.byteLength}, metadataSize: ${e.data.metadata.byteLength}`)
-      if (videoDecoder != null) {        
+      if (videoDecoder != null) {
         if (lastMetadataUsed == null || !compareArrayBuffer(lastMetadataUsed, e.data.metadata)) {
           const config = getAndOverrideInitDataValues(e.data.metadata)
-          sendMessageToMain(WORKER_PREFIX, 'info', `SeqId: ${e.data.seqId} Received different init, REinitializing the VideoDecoder. Config: ${JSON.stringify(config)}`)          
+          sendMessageToMain(WORKER_PREFIX, 'info', `SeqId: ${e.data.seqId} Received different init, REinitializing the VideoDecoder. Config: ${JSON.stringify(config)}`)
           videoDecoder.configure(config)
         }
-        lastMetadataUsed = e.data.metadata        
+        lastMetadataUsed = e.data.metadata
       } else {
         // Initialize video decoder
         // eslint-disable-next-line no-undef
@@ -99,7 +99,7 @@ self.addEventListener('message', async function (e) {
             ptsQueue.removeUntil(videoDecoder.decodeQueueSize)
           }
         })
-        
+
         const config = getAndOverrideInitDataValues(e.data.metadata)
         videoDecoder.configure(config)
         lastMetadataUsed = e.data.metadata
