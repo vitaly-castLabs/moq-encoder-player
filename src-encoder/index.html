@@ -56,22 +56,22 @@ LICENSE file in the root directory of this source tree.
                 <div class="clear"></div>
                 <label>AuthInfo (for all tracks, shared with subscribers):<input id="authInfo" type="text" value="secret"></label>
                 <div class="clear"></div>
-                <label>MOQ video packager:<select id="moqVideoQuicMapping"></select></label>  
-                <label>MOQ audio packager:<select id="moqAudioQuicMapping"></select></label>  
+                <label>MOQ video packager:<select id="moqVideoQuicMapping"></select></label>
+                <label>MOQ audio packager:<select id="moqAudioQuicMapping"></select></label>
                 <div class="clear"></div>
                 <h3>Video encoding params (h264)</h3>
-                <label>Input sources: <select id="videoSources"></select></label>      
-                (If you select "Screen" and a window with small refresh rate it can affect A LOT the time to 1st frame and time to loss recovery )          
+                <label>Input sources: <select id="videoSources"></select></label>
+                (If you select "Screen" and a window with small refresh rate it can affect A LOT the time to 1st frame and time to loss recovery )
                 <div class="clear"></div>
                 <label>Resolution @ fps: <select id="videoEncodingOptions"></select></label>
                 <label>KeyFrame every (frames):<input id="videoEncodingKeyFrameEvery" type="text" value="60"
                         size="5"></label>
-                <label>Bitrate (bps): <input id="videoEncodingBitrateBps" type="text" value="750000" size="8"></label>
+                <label>Bitrate (bps): <input id="videoEncodingBitrateBps" type="text" value="1000000" size="8"></label>
                 <div class="clear"></div>
                 <label>Activate latency tracker (overlays data on video): <input type="checkbox" id="activateLatencyTracker"></label>
                 <div class="clear"></div>
                 <h3>Audio encoding params (opus)</h3>
-                <label>Input sources: <select id="audioSources"></select></label>                
+                <label>Input sources: <select id="audioSources"></select></label>
                 <div class="clear"></div>
                 <label>Bitrate (bps): <input id="audioEncodingBitrateBps" type="text" value="32000" size="8"></label>
                 <div class="clear"></div>
@@ -112,18 +112,18 @@ LICENSE file in the root directory of this source tree.
                 <label>Current comp audio TS(ms):<input id="encodedAudioCompensatedTs" type="text" value="" readonly></label>
                 <div class="clear"></div>
                 <label>Encoding audio latency (ms):<input id="encodedAudioLatencyMs" type="text" value="" readonly></label>
-                <div class="clear"></div>                
+                <div class="clear"></div>
                 <label>Current video TS(ms):<input id="encodedVideoTs" type="text" value="" readonly></label>
                 <div class="clear"></div>
                 <label>Current comp video TS(ms):<input id="encodedVideoCompensatedTs" type="text" value="" readonly></label>
                 <div class="clear"></div>
                 <label>Encoding video latency (ms):<input id="encodedVideoLatencyMs" type="text" value="" readonly></label>
-                <div class="clear"></div>                
-                
+                <div class="clear"></div>
+
                 <label>Current V-A TS(ms):<input id="encodedVADelayCompensatedTS" type="text" value="" readonly></label>
                 <div class="clear"></div>
-                                
-            </form>        
+
+            </form>
         </div>
     </div>
     <div class="boxed">
@@ -180,11 +180,11 @@ LICENSE file in the root directory of this source tree.
             width: 320,
             height: 180,
             bitrate: 1_000_000, // 1 Mbps
-            framerate: 30,
+            framerate: 60,
             latencyMode: 'realtime', // Sends 1 chunk per frame
         },
         encoderMaxQueueSize: 2,
-        keyframeEvery: 60,
+        keyframeEvery: 120
     };
 
     // Audio encoder config
@@ -335,9 +335,9 @@ LICENSE file in the root directory of this source tree.
             currentAudioDeviceId = document.getElementById("audioSources").options[currentAudioDeviceIdIndex].value;
         }
 
-        const currentVideoEncodingIndex = document.getElementById('videoEncodingOptions').selectedIndex < 0 ? 0 : document.getElementById('videoEncodingOptions').selectedIndex;        
-        const currentVideoEncodingOptions = document.getElementById("videoEncodingOptions").options[currentVideoEncodingIndex].data; 
-        
+        const currentVideoEncodingIndex = document.getElementById('videoEncodingOptions').selectedIndex < 0 ? 0 : document.getElementById('videoEncodingOptions').selectedIndex;
+        const currentVideoEncodingOptions = document.getElementById("videoEncodingOptions").options[currentVideoEncodingIndex].data;
+
         restartPreviewUI(currentVideoDeviceId, currentAudioDeviceId, currentVideoEncodingOptions.w, currentVideoEncodingOptions.h);
     }
 
@@ -349,10 +349,10 @@ LICENSE file in the root directory of this source tree.
         return false;
     }
 
-    function updatePreviewVideoSettingsUI(newWidth, newHeight) {               
+    function updatePreviewVideoSettingsUI(newWidth, newHeight) {
         if (document.getElementById('vPreview').srcObject == undefined && document.getElementById('vPreview').srcObject == null) {
-            console.error("Preview NOT active yet, we can NOT update video settings"); 
-            return;           
+            console.error("Preview NOT active yet, we can NOT update video settings");
+            return;
         }
 
         enableUI("processingUpdate");
@@ -364,7 +364,7 @@ LICENSE file in the root directory of this source tree.
         if (videoTracks.length > 0) {
             videoTracks[0].applyConstraints(videoConstraints)
             .then(() => {
-                
+
                 // Set the resolution of preview to encoder resolution
                 document.getElementById('vPreview').width = newWidth;
                 document.getElementById('vPreview').height = newHeight;
@@ -374,7 +374,7 @@ LICENSE file in the root directory of this source tree.
             .catch((err) => {
                 console.error(`Updating video preview. Err: ${JSON.stringify(err)}`);
             })
-            .finally(() => {                
+            .finally(() => {
                 enableUI("readyToPublish");
             });
         }
@@ -382,6 +382,7 @@ LICENSE file in the root directory of this source tree.
 
     function getMedia(screen, constraints) {
         if (screen) {
+            console.log('GDM constraints:', constraints);
             return navigator.mediaDevices.getDisplayMedia(constraints);
         } else {
             return navigator.mediaDevices.getUserMedia(constraints);
@@ -429,22 +430,28 @@ LICENSE file in the root directory of this source tree.
         }
         refreshEnableAudioSourceUI();
 
-        if (newHeight > 0) {
-            videoConstraints.height = {ideal: newHeight};
+        if (shareScreen) {
+            videoConstraints.height = {ideal: 480};
+            videoConstraints.frameRate = {ideal: 60};
         }
-        if (newWidth > 0) {
-            videoConstraints.width = {ideal: newWidth};
+        else {
+            if (newHeight > 0) {
+                videoConstraints.height = {ideal: newHeight};
+            }
+            if (newWidth > 0) {
+                videoConstraints.width = {ideal: newWidth};
+            }
         }
 
         constraints.video = videoConstraints;
         constraints.audio = audioConstraints;
-                
+
         // Start new stream
         getMedia(shareScreen, constraints)
-        .then(mediaStream => {                    
+        .then(mediaStream => {
             // Connect the stream to the preview video element.
-            document.getElementById('vPreview').srcObject = mediaStream;      
-            
+            document.getElementById('vPreview').srcObject = mediaStream;
+
             return mediaStream;
         })
         .then(mediaStream => {
@@ -557,7 +564,7 @@ LICENSE file in the root directory of this source tree.
         const optionObjStream = document.createElement('option');
         optionObjStream.value = MOQ_MAPPING_OBJECT_PER_STREAM;
         if (moqMappingSelected == MOQ_MAPPING_OBJECT_PER_STREAM || moqMappingSelected == undefined) {
-            optionObjStream.selected = true;        
+            optionObjStream.selected = true;
         }
         optionObjStream.appendChild(document.createTextNode("Object per stream"));
         selectElement.appendChild(optionObjStream);
@@ -566,7 +573,7 @@ LICENSE file in the root directory of this source tree.
         const optionObjPerTrack = document.createElement('option');
         optionObjPerTrack.value = MOQ_MAPPING_TRACK_PER_STREAM;
         if (moqMappingSelected == MOQ_MAPPING_TRACK_PER_STREAM) {
-            optionObjPerTrack.selected = true;        
+            optionObjPerTrack.selected = true;
         }
         optionObjPerTrack.appendChild(document.createTextNode("Track per stream"));
         selectElement.appendChild(optionObjPerTrack);
@@ -575,7 +582,7 @@ LICENSE file in the root directory of this source tree.
         const optionObjPerGroup = document.createElement('option');
         optionObjPerGroup.value = MOQ_MAPPING_GROUP_PER_STREAM;
         if (moqMappingSelected == MOQ_MAPPING_GROUP_PER_STREAM) {
-            optionObjPerGroup.selected = true;        
+            optionObjPerGroup.selected = true;
         }
         optionObjPerGroup.appendChild(document.createTextNode("Group per stream"));
         selectElement.appendChild(optionObjPerGroup);
@@ -586,7 +593,7 @@ LICENSE file in the root directory of this source tree.
             const optionObjTrack = document.createElement('option');
             optionObjTrack.value = MOQ_MAPPING_OBJECT_PER_DATAGRAM;
             if (moqMappingSelected == MOQ_MAPPING_OBJECT_PER_DATAGRAM) {
-                optionObjStream.selected = true;        
+                optionObjStream.selected = true;
             }
             optionObjTrack.appendChild(document.createTextNode("Object per datagram"));
             selectElement.appendChild(optionObjTrack);
@@ -611,7 +618,7 @@ LICENSE file in the root directory of this source tree.
         const mediaType = (isVideo) ? "Video" : "Audio";
         console.log(`${mediaType} input device added: ${label}(${option.value})`);
     }
-    
+
     async function populateVideoSourcesUI() {
         const select = document.getElementById('videoSources');
         select.innerHTML = '';
@@ -679,16 +686,16 @@ LICENSE file in the root directory of this source tree.
         let selectedVideoSourceDeviceId = '';
         if (videoSourceSelectedIndex >= 0) {
             selectedVideoSourceDeviceId = document.getElementById('videoSources').options[videoSourceSelectedIndex].value;
-        }        
+        }
         const videoOptionsSelectedElementData = document.getElementById('videoEncodingOptions').options[document.getElementById('videoEncodingOptions').selectedIndex].data;
 
         // Restart preview with new selection
         restartPreviewUI(selectedVideoSourceDeviceId, newAudioDeviceId, videoOptionsSelectedElementData.w, videoOptionsSelectedElementData.h);
     }
 
-    function onVideoEncodingsSettingsChanged(newData) {        
+    function onVideoEncodingsSettingsChanged(newData) {
         const videoOptionsSelectedElementData = document.getElementById('videoEncodingOptions').options[document.getElementById('videoEncodingOptions').selectedIndex].data;
-        
+
         updatePreviewVideoSettingsUI(newData.w, newData.h);
     }
 
@@ -719,7 +726,7 @@ LICENSE file in the root directory of this source tree.
 
     function stop() {
         enableUI("readyToPublish");
-        
+
         document.getElementById("oldTrackName").value = document.getElementById("trackName").value;
         initStreamIDUI();
 
@@ -742,7 +749,7 @@ LICENSE file in the root directory of this source tree.
             if (VERBOSE === true) {
                 // logging debug
                 console.debug(e.data.data);
-            }            
+            }
         } else if (e.data.type === "info") {
             // logging info
             console.log(e.data.data);
@@ -771,7 +778,7 @@ LICENSE file in the root directory of this source tree.
             }
             currentVideoTs = vFrame.timestamp;
             videoTimeChecker.AddItem({ ts: currentVideoTs, compensatedTs: currentVideoTs + videoOffsetTS, estimatedDuration: estimatedDuration, clkms: e.data.clkms });
-            
+
              // Modify pixels
             let vNewFrame = vFrame
             if (document.getElementById('activateLatencyTracker').checked) {
@@ -780,7 +787,7 @@ LICENSE file in the root directory of this source tree.
                     console.debug(`[OVERLAY] Added overlay to frame ts ${vNewFrame.timestamp}, clk: ${e.data.clkms}`)
                 }
             }
-            
+
             // Encode video frame
             vEncoderWorker.postMessage({ type: "vframe", vframe: vNewFrame }, [ vNewFrame ]);
         } else if (e.data.type === "aframe") {
@@ -816,21 +823,21 @@ LICENSE file in the root directory of this source tree.
             if (!itemTsClk.valid) {
                 console.warn(`Not found clock time <-> TS for that video frame, this should not happen.  ts: ${chunk.timestamp}, id:${seqId}`);
             } else {
-                updateEncodedVideoTSUI(chunk.timestamp, itemTsClk.compensatedTs);          
+                updateEncodedVideoTSUI(chunk.timestamp, itemTsClk.compensatedTs);
                 updateEncodingVideoLatencyUI(Date.now()  - itemTsClk.clkms);
             }
             muxerSenderWorker.postMessage({ type: "video", firstFrameClkms: itemTsClk.clkms, compensatedTs: itemTsClk.compensatedTs, estimatedDuration: itemTsClk.estimatedDuration, seqId: seqId, chunk: chunk, metadata: metadata });
         } else if (e.data.type === "achunk") {
             const chunk = e.data.chunk;
             const metadata = e.data.metadata;
-            const seqId = e.data.seqId;            
+            const seqId = e.data.seqId;
 
             const itemTsClk = audioTimeChecker.GetItemByTs(chunk.timestamp);
             if (!itemTsClk.valid) {
                 console.info(`Not found clock time <-> TS for audio frame, this could happen. ts: ${chunk.timestamp}, id:${seqId}`);
             } else {
                 updateEncodedAudioTSUI(chunk.timestamp, itemTsClk.compensatedTs);
-                updateEncodingAudioLatencyUI(Date.now()  - itemTsClk.clkms);                
+                updateEncodingAudioLatencyUI(Date.now()  - itemTsClk.clkms);
             }
             muxerSenderWorker.postMessage({ type: "audio", firstFrameClkms: itemTsClk.clkms, compensatedTs: itemTsClk.compensatedTs, seqId: seqId, chunk: chunk, metadata: metadata });
             // CHUNKS STATS
@@ -918,9 +925,9 @@ LICENSE file in the root directory of this source tree.
         // Load video encoding settings
         videoEncoderConfig.encoderConfig.width = videoOptionsSelectedElementData.w;
         videoEncoderConfig.encoderConfig.height = videoOptionsSelectedElementData.h;
-        videoEncoderConfig.encoderConfig.framerate = videoOptionsSelectedElementData.fps;
+        videoEncoderConfig.encoderConfig.framerate = 60;//videoOptionsSelectedElementData.fps;
         videoEncoderConfig.encoderConfig.codec = getCodecString("avc1", 66, videoOptionsSelectedElementData.level);
-        videoEncoderConfig.encoderConfig.bitrate = parseInt(document.getElementById('videoEncodingBitrateBps').value);
+        videoEncoderConfig.encoderConfig.bitrate = 1_000_000;//parseInt(document.getElementById('videoEncodingBitrateBps').value);
         videoEncoderConfig.keyframeEvery = parseInt(document.getElementById('videoEncodingKeyFrameEvery').value);
 
         // Load audio encoding settings
@@ -941,7 +948,7 @@ LICENSE file in the root directory of this source tree.
             console.error("Publish session can not be started without audio tracks in preview");
             return;
         }
-        
+
         // Print messages from the worker in the console
         vStreamWorker.addEventListener('message', function (e) {
             processWorkerMessage(e);
@@ -975,19 +982,19 @@ LICENSE file in the root directory of this source tree.
 
         // Transport
         if (IS_LOCALHOST) {
-            const fingerprint_filename = `${location.origin}/certs/certificate_fingerprint.hex`; 
-            muxerSenderConfig.certificateHash = await getBinaryFile(fingerprint_filename)            
+            const fingerprint_filename = `${location.origin}/certs/certificate_fingerprint.hex`;
+            muxerSenderConfig.certificateHash = await getBinaryFile(fingerprint_filename)
         }
         // Get url data
         muxerSenderConfig.urlHostPort = document.getElementById('wtServerUrl').value;
-        
-        //Get max Inflight requests & auth info                
+
+        //Get max Inflight requests & auth info
         muxerSenderConfig.moqTracks["video"].namespace = document.getElementById('namespace').value;
         muxerSenderConfig.moqTracks["video"].name = document.getElementById('trackName').value + "-video";
         muxerSenderConfig.moqTracks["video"].maxInFlightRequests = parseInt(document.getElementById('maxInflightVideoRequests').value);
         muxerSenderConfig.moqTracks["video"].authInfo = document.getElementById('authInfo').value;
         muxerSenderConfig.moqTracks["video"].moqMapping = document.getElementById('moqVideoQuicMapping').value;
-        
+
         muxerSenderConfig.moqTracks["audio"].namespace = document.getElementById('namespace').value;
         muxerSenderConfig.moqTracks["audio"].name = document.getElementById('trackName').value + "-audio";
         muxerSenderConfig.moqTracks["audio"].maxInFlightRequests = parseInt(document.getElementById('maxInflightAudioRequests').value);

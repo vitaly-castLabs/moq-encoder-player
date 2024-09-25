@@ -16,7 +16,7 @@ let workerState = StateEnum.Created
 
 // Default values
 let encoderMaxQueueSize = 5
-let keyframeEvery = 60
+let keyframeEvery = 120
 let insertNextKeyframe = false
 
 // Encoder
@@ -68,6 +68,7 @@ self.addEventListener('message', async function (e) {
     vEncoder = new VideoEncoder(initVideoEncoder)
 
     vEncoder.configure(encoderConfig)
+    console.log('VE config:', encoderConfig)
     if ('encoderMaxQueueSize' in e.data) {
       encoderMaxQueueSize = e.data.encoderMaxQueueSize
     }
