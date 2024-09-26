@@ -180,11 +180,11 @@ LICENSE file in the root directory of this source tree.
             width: 320,
             height: 180,
             bitrate: 1_000_000, // 1 Mbps
-            framerate: 60,
+            framerate: 30,
             latencyMode: 'realtime', // Sends 1 chunk per frame
         },
         encoderMaxQueueSize: 2,
-        keyframeEvery: 120
+        keyframeEvery: 60
     };
 
     // Audio encoder config
@@ -432,7 +432,7 @@ LICENSE file in the root directory of this source tree.
 
         if (shareScreen) {
             videoConstraints.height = {ideal: 480};
-            videoConstraints.frameRate = {ideal: 60};
+            videoConstraints.frameRate = {ideal: 30};
         }
         else {
             if (newHeight > 0) {
@@ -925,7 +925,7 @@ LICENSE file in the root directory of this source tree.
         // Load video encoding settings
         videoEncoderConfig.encoderConfig.width = videoOptionsSelectedElementData.w;
         videoEncoderConfig.encoderConfig.height = videoOptionsSelectedElementData.h;
-        videoEncoderConfig.encoderConfig.framerate = 60;//videoOptionsSelectedElementData.fps;
+        videoEncoderConfig.encoderConfig.framerate = 30;//videoOptionsSelectedElementData.fps;
         videoEncoderConfig.encoderConfig.codec = getCodecString("avc1", 66, videoOptionsSelectedElementData.level);
         videoEncoderConfig.encoderConfig.bitrate = 1_000_000;//parseInt(document.getElementById('videoEncodingBitrateBps').value);
         videoEncoderConfig.keyframeEvery = parseInt(document.getElementById('videoEncodingKeyFrameEvery').value);

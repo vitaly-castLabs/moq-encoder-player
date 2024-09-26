@@ -16,7 +16,7 @@ let workerState = StateEnum.Created
 
 // Default values
 let encoderMaxQueueSize = 5
-let keyframeEvery = 120
+let keyframeEvery = 60
 let insertNextKeyframe = false
 
 // Encoder
